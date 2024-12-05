@@ -1,0 +1,38 @@
+$w.onReady(() => {
+    $w("#dataset1").onReady(() => {
+        $w("#dataset1").getItems(0, 100).then((result) => {
+            const products = result.items.map(item => ({
+                name: item.name,
+                image: convertWixImageUrl(item.image),
+                description: item.description,
+            }));
+            console.log("Products: ", products);
+
+            const customElement = $w("#customElement"); //data is passed to custom element by set attribute and the data set name
+            customElement.setAttribute("data-products", JSON.stringify(products)); // converts products array to Json string
+           
+            customElement.on("productClick", (event) => {
+                const product = event.detail;
+                console.log(`Product clicked (from Velo page): Name: ${product.name}, Description: ${product.description}, Image: ${product.image}`);
+            });
+        }).catch((err) => {
+            console.error("Error fetching data:", err);
+        });
+    });
+});
+
+
+function convertWixImageUrl(wixUrl) {
+    // Step 1: Extract the unique image identifier
+    const match = wixUrl.match(/wix:image:\/\/v1\/([^\/]+)\/[^?#]+/);
+    
+    if (match && match[1]) {
+        // Step 2: Construct the correct static URL
+        const imageUrl = match[1];
+        const staticUrl = `https://static.wixstatic.com/media/${imageUrl}`;
+        
+        return staticUrl;
+    }
+    
+    return null; // Return null if the URL format is incorrect
+}
